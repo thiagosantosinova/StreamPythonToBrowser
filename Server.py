@@ -4,11 +4,11 @@ import cv2
 
 class EndpointAction(object):
 
-    def __init__(self, action, mimetype="multipart/x-mixed-replace; boundary=frame"):  # Para instancias
+    def __init__(self, action, mimetype="multipart/x-mixed-replace; boundary=frame"): 
         self.action = action
         self.mimetype = mimetype
 
-    def __call__(self, *args):  # Para chamadas de funcao
+    def __call__(self, *args):  
         answer = self.action()
         return Response(answer, mimetype=self.mimetype)
 
@@ -45,7 +45,24 @@ def stream():
         else:
             break
 
+def get_images():
 
-serverApp = FlaskAppWrapper(__name__, debug=True)
-serverApp.add_endpoint(endpoint="/video", endpoint_name="video", handler=stream)
-serverApp.run()
+    while True:
+
+        img = cv2.imread('C:/Users/thiago.santos/Desktop/INV-34600/images/3digit/streamPy/image.png')
+
+        if img is not None:
+
+            imgEncode = cv2.imencode(".jpg", img)[1]
+            bytesImgEnconde = imgEncode.tobytes()
+
+            yield (
+                b"--frame\r\n"
+                b"Content-Type: text/plain\r\n\r\n" + bytesImgEnconde + b"\r\n"
+            )
+
+if __name__ == "__main__":
+    serverApp = FlaskAppWrapper(__name__, debug=True)
+    serverApp.add_endpoint(endpoint="/stream", endpoint_name="stream", handler=stream)
+    serverApp.add_endpoint(endpoint="/imgTest", endpoint_name="imgTest", handler=get_images)
+    serverApp.run()
