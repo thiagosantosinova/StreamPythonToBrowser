@@ -1,14 +1,13 @@
-from flask import Flask, Response
-import cv2
+from flask import Flask, Response, request
+import cv2, os, signal
 
 
 class EndpointAction(object):
-
-    def __init__(self, action, mimetype="multipart/x-mixed-replace; boundary=frame"): 
+    def __init__(self, action, mimetype="multipart/x-mixed-replace; boundary=frame"):
         self.action = action
         self.mimetype = mimetype
 
-    def __call__(self, *args):  
+    def __call__(self, *args):
         answer = self.action()
         return Response(answer, mimetype=self.mimetype)
 
@@ -16,7 +15,7 @@ class EndpointAction(object):
 class FlaskAppWrapper(object):
     app = None
 
-    def __init__(self, nameServer, host='127.0.0.1', port=5000, debug=False):
+    def __init__(self, nameServer, host="127.0.0.1", port=5000, debug=False):
         self.app = Flask(nameServer)
         self.host = host
         self.port = port
@@ -45,14 +44,14 @@ def stream():
         else:
             break
 
+
 def get_images():
-
     while True:
-
-        img = cv2.imread('C:/Users/thiago.santos/Desktop/INV-34600/images/3digit/streamPy/image.png')
+        img = cv2.imread(
+            "C:/Users/thiago.santos/Desktop/INV-34600/images/3digit/streamPy/image.png"
+        )
 
         if img is not None:
-
             imgEncode = cv2.imencode(".jpg", img)[1]
             bytesImgEnconde = imgEncode.tobytes()
 
@@ -61,8 +60,23 @@ def get_images():
                 b"Content-Type: text/plain\r\n\r\n" + bytesImgEnconde + b"\r\n"
             )
 
+
+def closeServer():
+    os._exit(0)
+    # os.kill(pid, signal.SIGINT) 
+
+
 if __name__ == "__main__":
+    pid = os.getpid()
+    print("PID:", pid, flush=True)
+
     serverApp = FlaskAppWrapper(__name__, debug=True)
+
+    print("Ip Server: http://", serverApp.host, ":", serverApp.port, flush=True, sep="")
+
+    # Routes
     serverApp.add_endpoint(endpoint="/stream", endpoint_name="stream", handler=stream)
     serverApp.add_endpoint(endpoint="/imgTest", endpoint_name="imgTest", handler=get_images)
+    serverApp.add_endpoint(endpoint="/closeServer", endpoint_name="closeServer", handler=closeServer)
+
     serverApp.run()
