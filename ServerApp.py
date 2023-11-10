@@ -30,10 +30,12 @@ class FlaskAppWrapper(object):
 
 def stream():
 
-    camera = cv2.VideoCapture(0)
+    webcam = cv2.VideoCapture(0, cv2.CAP_DSHOW)
+
+    print("ServerApp Stream [START]",flush=True)
 
     while True:
-        success, frame = camera.read()
+        success, frame = webcam.read()
         if success:
             imgEncode = cv2.imencode(".jpg", frame)[1]
             bytesImgEnconde = imgEncode.tobytes()
@@ -46,6 +48,9 @@ def stream():
 
 
 def get_images():
+
+    print("ServerApp GetImages [START]",flush=True)
+
     while True:
         img = cv2.imread(
             "C:/Users/thiago.santos/Desktop/INV-34600/images/3digit/streamPy/image.png"
@@ -62,6 +67,9 @@ def get_images():
 
 
 def closeServer():
+
+    print("ServerApp CloseServer [END]",flush=True)
+
     os._exit(0)
     # os.kill(pid, signal.SIGINT) 
 
